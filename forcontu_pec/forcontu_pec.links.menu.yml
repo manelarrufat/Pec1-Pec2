@@ -1,0 +1,12 @@
+forcontu_pec.settings:
+  title: 'Forcontu Pec'
+  route_name: forcontu_pec.settings
+  description: 'Forcontu Pec settings'
+  parent: system.admin_config_system
+  weight: 99
+  
+forcontu_pec.messages:
+  title: 'Forcontu Pec Mesaages'
+  route_name: forcontu_pec.messages
+  description: 'Forcontu Pec Messages'
+  parent: system.admin_structure

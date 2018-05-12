@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall and update hooks for forcontu_pec module.
+ */
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_schema().
+ */
+function forcontu_pec_schema() {
+  
+  $schema['forcontu_pec_messages'] = [
+    'description' => 'Creating the database table',
+    'fields' => [
+      'nid' => [
+        'description' => 'Identifier reference',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'checked' => [
+        'description' => 'Indicates whether the message is marked',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+      ],
+      'message' => [
+        'description' => 'The message text',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['nid'],
+  ];
+  
+  return $schema;
+  
+}

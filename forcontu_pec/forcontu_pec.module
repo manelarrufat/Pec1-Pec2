@@ -1,0 +1,123 @@
+<?php
+
+/**
+ * @file
+ * Contains forcontu_pec.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function forcontu_pec_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the forcontu_pec module.
+    case 'help.page.forcontu_pec':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Module Forcontu PEC 1') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ */
+function forcontu_pec_form_node_form_alter(&$form, FormStateInterface 
+    $form_state, $form_id) {
+  
+  // Identificamos los tipos de nodo permitidos
+  $allowed_types = array_values(\Drupal::config('forcontu_pec.settings')
+      ->get('forcontu_pec_allowed_types'));
+  
+  // Comprobamos que el nodo a añadir/editar es del tipo permitido
+  $node_type = $form_state->getFormObject()->getEntity()->getType();
+  //dpm($allowed_types);
+  //dpm($node_type);
+  if (in_array($node_type, $allowed_types, TRUE)) {
+    $nid = $form_state->getFormObject()->getEntity()->id();
+    
+    $connection = \Drupal::database();
+    
+    $data = $connection->select('forcontu_pec_messages', 'f')
+      ->fields('f', ['checked', 'message'])
+      ->condition('f.nid', $nid)
+      ->execute()
+      ->fetchAll();
+    
+    //dpm($data);
+    $checked = $data[0]->checked;
+    $message = $data[0]->message;
+    
+    $form['forcontu_pec'] = [
+      '#type' => 'details',
+      '#title' => t('Forcontu PEC'),
+      '#access' => \Drupal::currentUser()->hasPermission('forcontu pec nodes'),
+      '#group' => 'advanced',
+      '#weight' => 100,
+      '#open' => FALSE,
+    ];
+
+    $form['forcontu_pec']['forcontu_pec_message_check'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Activar mensaje'),
+      '#description' => t(''),
+      '#default_value' => $checked == NULL ? 0 : $checked,
+      '#weight' => '0',
+    ];
+
+    $form['forcontu_pec']['forcontu_pec_message'] = [
+      '#type' => 'textfield',
+      '#title' => t('Mensaje personalizado'),'#description' => t(''),
+      '#maxlength' => 64,
+      '#size' => 64,
+      '#weight' => '10',
+      '#default_value' => $message == NULL ? 
+        \Drupal::config('forcontu_pec.settings')->get('forcontu_pec_message') : 
+        $message,
+    ];
+    
+    $form['actions']['publish']['#submit'][] = 
+        'forcontu_pec_form_node_form_submit';
+    
+    $form['actions']['unpublish']['#submit'][] = 
+        'forcontu_pec_form_node_form_submit';
+    
+    $form['actions']['submit']['#submit'][] = 
+        'forcontu_pec_form_node_form_submit';
+  }
+}
+
+/*
+ * Custom function to update the forcontu_pec_messages table
+ * 
+ * @param array $form
+ * @param FormStateInterface $form_state
+ */
+function forcontu_pec_form_node_form_submit(array &$form,
+    FormStateInterface $form_state) {
+  // nid checked message
+  $nid = $form_state->get('nid');
+  $checked = $form_state->getValue('forcontu_pec_message_check');
+  $message = $form_state->getValue('forcontu_pec_message');
+  
+  dpm($nid);
+  dpm($checked);
+  dpm($message);
+  
+  $connection = \Drupal::database();
+  
+  $upsert = $connection->upsert('forcontu_pec_messages')
+    ->key('nid')
+    ->fields(['nid', 'checked', 'message'])
+    ->values([
+      'nid' => $nid,
+      'checked' => $checked,
+      'message' => $message,
+  ])->execute();
+}

@@ -1,0 +1,5 @@
+name: 'Forcontu PEC 2'
+type: module
+description: 'Module Forcontu Pec 2'
+core: 8.x
+package: 'Forcontu'

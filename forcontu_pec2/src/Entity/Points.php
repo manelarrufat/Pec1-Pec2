@@ -37,7 +37,7 @@ use Drupal\user\UserInterface;
  *   admin_permission = "administer points entities",
  *   entity_keys = {
  *     "id" = "id",
- *     "label" = "name",
+ *     "label" = "points",
  *     "uuid" = "uuid",
  *     "uid" = "user_id",
  *     "langcode" = "langcode",
@@ -70,77 +70,89 @@ class Points extends ContentEntityBase implements PointsInterface {
   /**
    * {@inheritdoc}
    */
-  public function getName() {
-    return $this->get('name')->value;
+  public function getUserId() {
+    return $this->get('uid')->target_id;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
-    $this->set('name', $name);
+  public function setUserId($uid) {
+    $this->set('uid', $uid);
     return $this;
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
+  public function getTargetType() {
+    return $this->get('target_type')->value;
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
-    $this->set('created', $timestamp);
-    return $this;
+  public function setTargetType($target_type) {
+    $this->set('target_type', $target_type);
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function getOwner() {
-    return $this->get('user_id')->entity;
+  public function getTargetEntity() {
+    return $this->get('target_entity')->target_id;
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function getOwnerId() {
-    return $this->get('user_id')->target_id;
+  public function setTargetEntity($target_id) {
+    $this->set('target_entity', $target_id);
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function setOwnerId($uid) {
-    $this->set('user_id', $uid);
-    return $this;
+  public function getOperation() {
+    return $this->get('operation')->value;
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function setOwner(UserInterface $account) {
-    $this->set('user_id', $account->id());
-    return $this;
+  public function setOperation($operation) {
+    $this->set('operation', $operation);
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function isPublished() {
-    return (bool) $this->getEntityKey('status');
+  public function getTimestamp() {
+    return $this->get('timestamp')->value;
   }
-
+  
   /**
    * {@inheritdoc}
    */
-  public function setPublished($published) {
-    $this->set('status', $published ? TRUE : FALSE);
-    return $this;
+  public function setTimestamp($timestamp) {
+    $this->set('timestamp', $timestamp);
   }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getPoints() {
+    return $this->get('points')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setPoints($points) {
+    $this->set('points', $points);
+  }
+  
+  
 
   /**
    * {@inheritdoc}
@@ -148,9 +160,9 @@ class Points extends ContentEntityBase implements PointsInterface {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['user_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Authored by'))
-      ->setDescription(t('The user ID of author of the Points entity.'))
+    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Owner of the points'))
+      ->setDescription(t('The user ID of the owner of the Points entity.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
@@ -172,12 +184,57 @@ class Points extends ContentEntityBase implements PointsInterface {
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
-
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name'))
-      ->setDescription(t('The name of the Points entity.'))
+    
+    $fields['target_type'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Entity type'))
+      ->setDescription(t('The entity type that generates points.'))
       ->setSettings([
-        'max_length' => 50,
+        'max_length' => 100,
+        'text_processing' => 0,
+      ])
+      ->setDefaultValue('node')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => -4,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -4,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+    
+    $fields['target_entity'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Entity that generates points.'))
+      ->setDescription(t('The node ID of the entity that generates points.'))
+      ->setRevisionable(TRUE)
+      ->setSetting('target_type', 'node')
+      ->setSetting('handler', 'default')
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'node',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'weight' => 5,
+        'settings' => [
+          'match_operator' => 'CONTAINS',
+          'size' => '60',
+          'autocomplete_type' => 'tags',
+          'placeholder' => '',
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['operation'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Operation'))
+      ->setDescription(t('The operation that generates or cancels points.'))
+      ->setSettings([
+        'max_length' => 10,
         'text_processing' => 0,
       ])
       ->setDefaultValue('')
@@ -191,18 +248,30 @@ class Points extends ContentEntityBase implements PointsInterface {
         'weight' => -4,
       ])
       ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE)
-      ->setRequired(TRUE);
+      ->setDisplayConfigurable('view', TRUE);
 
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Publishing status'))
-      ->setDescription(t('A boolean indicating whether the Points is published.'))
-      ->setDefaultValue(TRUE)
+    $fields['timestamp'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Timestamp'))
+      ->setDescription(t('The time that the points was generated.'));
+
+    $fields['points'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Points'))
+      ->setDescription(t('The points that the node was generated.'))
+      ->setSettings([
+      ])
+      ->setDefaultValue(0)
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'integer',
+        'weight' => -4,
+      ])
       ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
-        'weight' => -3,
-      ]);
-
+        'type' => 'integer',
+        'weight' => -4,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+    
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the entity was created.'));
@@ -212,6 +281,22 @@ class Points extends ContentEntityBase implements PointsInterface {
       ->setDescription(t('The time that the entity was last edited.'));
 
     return $fields;
+  }
+
+  public function getOwner(): UserInterface {
+    
+  }
+
+  public function getOwnerId() {
+    
+  }
+
+  public function setOwner(UserInterface $account): \this {
+    
+  }
+
+  public function setOwnerId($uid): \this {
+    
   }
 
 }

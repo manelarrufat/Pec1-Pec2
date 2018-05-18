@@ -16,31 +16,87 @@ interface PointsInterface extends ContentEntityInterface, EntityChangedInterface
   // Add get/set methods for your configuration properties here.
 
   /**
-   * Gets the Points name.
+   * Gets the User id.
    *
-   * @return string
-   *   Name of the Points.
+   * @return int
+   *   The user id.
    */
-  public function getName();
+  public function getUserId();
 
   /**
-   * Sets the Points name.
+   * Sets the User id.
    *
-   * @param string $name
-   *   The Points name.
+   * @param int $uid
+   *   The User id.
    *
-   * @return \Drupal\forcontu_pec2\Entity\PointsInterface
-   *   The called Points entity.
+   * @return $this
    */
-  public function setName($name);
-
+  public function setUserId($uid);
+  
+  /**
+   * Gets the target entity type
+   * 
+   * @return string
+   *   The entity type
+   */
+  public function getTargetType();
+  
+  /**
+   * Sets the target entity type
+   * 
+   * @param string $target_type
+   *   The entity target type
+   * 
+   * @return $this
+   */
+  public function setTargetType($target_type);
+  
+   /**
+   * Gets the target entity id
+   * 
+   * @return int
+   *   The entity id
+   */
+  public function getTargetEntity();
+  
+  /**
+   * Sets the target entity id
+   * 
+   * @param string $target_id
+   *   The entity target id
+   * 
+   * @return $this
+   */
+  public function setTargetEntity($target_id);
+  
+  /**
+   * Gets the operation
+   * 
+   * @return string
+   *   The operation name
+   */
+  public function getOperation();
+  
+  /**
+   * Sets the operation
+   * 
+   * @param string $operation
+   *   The operation
+   * 
+   * @return $this
+   */
+  public function setOperation($operation);
+   
+  
+  
+  
   /**
    * Gets the Points creation timestamp.
    *
    * @return int
    *   Creation timestamp of the Points.
    */
-  public function getCreatedTime();
+  public function getTimestamp();
 
   /**
    * Sets the Points creation timestamp.
@@ -48,30 +104,26 @@ interface PointsInterface extends ContentEntityInterface, EntityChangedInterface
    * @param int $timestamp
    *   The Points creation timestamp.
    *
-   * @return \Drupal\forcontu_pec2\Entity\PointsInterface
-   *   The called Points entity.
+   * @return $this
    */
-  public function setCreatedTime($timestamp);
+  public function setTimestamp($timestamp);
 
   /**
-   * Returns the Points published status indicator.
+   * Returns the Points.
    *
-   * Unpublished Points are only visible to restricted users.
-   *
-   * @return bool
-   *   TRUE if the Points is published.
+   * @return int
+   *   The number of points.
    */
-  public function isPublished();
+  public function getPoints();
 
   /**
-   * Sets the published status of a Points.
+   * Sets the number of Points.
    *
-   * @param bool $published
-   *   TRUE to set this Points to published, FALSE to set it to unpublished.
+   * @param int $points
+   *   Number of points
    *
-   * @return \Drupal\forcontu_pec2\Entity\PointsInterface
-   *   The called Points entity.
+   * @return $this
    */
-  public function setPublished($published);
+  public function setPoints($points);
 
 }

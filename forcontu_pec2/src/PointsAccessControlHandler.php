@@ -21,9 +21,9 @@ class PointsAccessControlHandler extends EntityAccessControlHandler {
     /** @var \Drupal\forcontu_pec2\Entity\PointsInterface $entity */
     switch ($operation) {
       case 'view':
-        if (!$entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view unpublished points entities');
-        }
+//        if (!$entity->isPublished()) {
+//          return AccessResult::allowedIfHasPermission($account, 'view unpublished points entities');
+//        }
         return AccessResult::allowedIfHasPermission($account, 'view published points entities');
 
       case 'update':

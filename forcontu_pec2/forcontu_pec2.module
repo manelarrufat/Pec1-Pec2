@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Implements hook_help().
@@ -21,4 +22,39 @@ function forcontu_pec2_help($route_name, RouteMatchInterface $route_match) {
 
     default:
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ */
+function forcontu_pec2_node_insert(NodeInterface $node) {
+  $entityType = $node->getType();
+  $entityId = $node->id();
+  $userId = \Drupal::currentUser()->id();
+  $points = \Drupal::service('plugin.manager.grant_points')->createInstance('node_create');
+  $points->grant($entityType, $entityId, $userId);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node entities.
+ */
+function forcontu_pec2_node_update(NodeInterface $node) {
+  $userId = \Drupal::currentUser()->id();
+  $node_author = $node->getOwnerId();
+  if ($userId != $node_author) {
+    $entityType = $node->getType();
+    $entityId = $node->id();
+    $points = \Drupal::service('plugin.manager.grant_points')->createInstance('node_edit');
+    $points->grant($entityType, $entityId, $userId);
+  }
+  
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for node entities.
+ */
+function forcontu_pec2_node_delete(NodeInterface $node) {
+  $entityId = $node->id();
+  $points = \Drupal::service('plugin.manager.grant_points')->createInstance('node_delete');
+  $points->grant(NULL, $entityId, NULL);
 }

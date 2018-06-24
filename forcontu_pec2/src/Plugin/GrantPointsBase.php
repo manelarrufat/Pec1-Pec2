@@ -9,7 +9,10 @@ use Drupal\Component\Plugin\PluginBase;
  */
 abstract class GrantPointsBase extends PluginBase implements GrantPointsInterface {
 
-
-  // Add common methods and abstract methods for your plugin type here.
+  public function description() {
+    return $this->pluginDefinition['description'];
+  }
+  
+  abstract public function grant($entityType, $entityId, $userId);
 
 }

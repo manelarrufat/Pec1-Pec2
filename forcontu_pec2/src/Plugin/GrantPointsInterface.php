@@ -8,8 +8,9 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  * Defines an interface for Grant points plugins.
  */
 interface GrantPointsInterface extends PluginInspectionInterface {
+  
+  public function description();
 
-
-  // Add get/set methods for your plugin type here.
+  public function grant($entityType, $entityId, $userId);
 
 }

@@ -35,6 +35,9 @@ function forcontu_pec2_node_insert(NodeInterface $node) {
   $points->grant($entityType, $entityId, $userId);
 }
 
+//Vaciamos la caché render
+\Drupal::cache('render')->deleteAll();
+
 /**
  * Implements hook_ENTITY_TYPE_update() for node entities.
  */
@@ -48,6 +51,8 @@ function forcontu_pec2_node_update(NodeInterface $node) {
     $points->grant($entityType, $entityId, $userId);
   }
   
+  //Vaciamos la caché render
+  \Drupal::cache('render')->deleteAll();
 }
 
 /**
@@ -57,4 +62,7 @@ function forcontu_pec2_node_delete(NodeInterface $node) {
   $entityId = $node->id();
   $points = \Drupal::service('plugin.manager.grant_points')->createInstance('node_delete');
   $points->grant(NULL, $entityId, NULL);
+  
+  //Vaciamos la caché render
+  \Drupal::cache('render')->deleteAll();
 }

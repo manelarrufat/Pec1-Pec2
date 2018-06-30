@@ -77,11 +77,12 @@ class Ranking extends BlockBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function blockForm($form, FormStateInterface $form_state) {
+    $range = range(1, 10);
     $form['number_of_users'] = [
       '#type' => 'select',
       '#title' => $this->t('Number of users'),
-    '#description' => $this->t('Display number of users selected'),
-      '#options' => ['no' => $this->t('no')],
+      '#description' => $this->t('Display number of users selected'),
+      '#options' => array_combine($range, $range),
       '#default_value' => $this->configuration['number_of_users'],
       '#size' => 5,
       '#weight' => '0',
@@ -101,8 +102,37 @@ class Ranking extends BlockBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function build() {
+    $order = 1;
     $build = [];
-    $build['ranking_number_of_users']['#markup'] = '<p>' . $this->configuration['number_of_users'] . '</p>';
+    $build[] = ['#markup' => '<table>',];
+    
+    $build[] = ['#markup' => '<tr><th>'.$this->t('Position').'</th><th>'. 
+      $this->t('Username').'</th><th>'.$this->t('Points').'</th> </tr>',];
+    $limit = (int) $this->configuration['number_of_users'];
+    
+    $connection = \Drupal::database();
+    
+    $result = $connection->queryRange(
+          'SELECT uid, SUM(points) as total  '
+        . 'FROM {forcontu_pec2_points} '
+        . 'GROUP BY uid '
+        . 'ORDER BY total DESC ', 0, $limit);
+    
+    foreach ($result as $record) {
+      //dpm($record);
+      $user = $connection->query(
+          'SELECT name FROM {users_field_data} WHERE uid = :uid', [':uid' => $record->uid]);
+      foreach ($user as $u) {
+        //dpm($u);
+      }
+      $build[] = ['#markup' => '<tr><td>'.$order
+          .'</td><td>'. $u->name
+          .'</td><td>'.$record->total
+          .'</td> </tr>',];
+      $order++;
+    }
+    
+    $build[] = ['#markup' => '</table>',];
 
     return $build;
   }
